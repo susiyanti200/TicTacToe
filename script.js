@@ -36,8 +36,24 @@ const GameBoard = (() => {
     };
 })();
 
-const Player = (name, mark) => {
-    return { name, mark };
+const Player = (name, mark, type) => {
+    return { name, mark, type };
+}
+
+const Computer = (name, mark, type, level) => {
+    const prototype = Player(name, mark, type);
+
+    const findRandomMove = () => {
+        const i = Math.floor(Math.random() * 3);
+        const j = Math.floor(Math.random() * 3);
+        return [i, j];
+    }
+
+    const makeMove = () => {
+        return findRandomMove();
+    }
+
+    return Object.assign({}, prototype, { level, makeMove });
 }
 
 const Game = (() => {
@@ -45,7 +61,12 @@ const Game = (() => {
 
     const _getPlayerForMark = mark => _players.filter(p => p.mark === mark);
 
+    const _changeTurn = () => _turn = Number(!_turn);
+
+    const getPlayerAtTurn = () => _players[_turn];
+
     const startGame = (player1, player2) => {
+        GameBoard.resetBoard();
         _players = [player1, player2];
         _turn = 0;
         _playing = true;
@@ -53,27 +74,40 @@ const Game = (() => {
 
     const getGameStatus = () => _playing;
 
-    const placeMark = (i, j) => {
-        let mark = _players[_turn].mark;
-        GameBoard.setMarkAtLoc(i, j, mark);
-        _turn = Number(!_turn);
-        return mark;
+    const _checkGameResult = () => {
+        const mark = GameBoard.checkWinner();
+        if (mark) {
+            _playing = false;
+            const winner = _getPlayerForMark(mark);
+            const result = winner.length > 0 ? `${winner[0].name} Win` : mark;
+            DisplayController.displayScore(result);
+        }
     }
 
     const evaluateGame = () => {
-        const mark = GameBoard.checkWinner();
-        if (mark) {
-            const winner = _getPlayerForMark(mark);
-            const result = winner.length > 0 ? `${winner[0].name} Win` : mark;
-            _playing = false;
-            GameBoard.resetBoard();
-            return result;
+        _checkGameResult();
+        if (getGameStatus()) {
+            _changeTurn();
+            playTurn();
         }
-        return mark;
+    }
+
+    const playTurn = () => {
+        if (getGameStatus()) {
+            let player = getPlayerAtTurn();
+            if (player.type === 'Computer') {
+                do {
+                    [i, j] = player.makeMove();
+                    boardMark = GameBoard.getMarkAtLoc(i, j);
+                } while (boardMark);
+                DisplayController.displayMarkAt(i, j, player.mark);
+                evaluateGame();
+            }
+        }
     }
 
     return {
-        startGame, getGameStatus, placeMark, evaluateGame
+        startGame, getGameStatus, evaluateGame, getPlayerAtTurn, playTurn
     }
 })();
 
@@ -83,21 +117,18 @@ const DisplayController = ((doc) => {
     const playBtn = gameInfo.querySelector('.btn-play');
     const playResult = gameInfo.querySelector('.result');
 
-    const player1 = Player('Player1', 'x');
-    const player2 = Player('Player2', 'o');
+    const player1 = Player('Player1', 'x', 'Human');
+    const comp1 = Computer('Computer1', 'o', 'Computer', 'Easy');
 
     const _addBoardElClick = () => {
         boardEl.addEventListener('click', (e) => {
-            if (Game.getGameStatus()) {
+            let player = Game.getPlayerAtTurn();
+            if (Game.getGameStatus() && player.type === 'Human') {
                 const cell = e.target;
                 if (!cell.textContent) {
                     [i, j] = (cell.dataset.index.split(''));
-                    const mark = Game.placeMark(i, j);
-                    cell.textContent = mark;
-                    const result = Game.evaluateGame();
-                    if (result) {
-                        _displayScore(result);
-                    }
+                    displayMarkAt(i, j, player.mark);
+                    Game.evaluateGame();
                 }
             }
         });
@@ -122,22 +153,29 @@ const DisplayController = ((doc) => {
         }
     }
 
-    const _displayScore = (result) => {
+    const displayScore = (result) => {
         boardEl.classList.remove('playing');
         gameInfo.style.display = 'block';
         playResult.textContent = result;
         _addPlayBtnClick();
     }
 
+    const displayMarkAt = (i, j, mark) => {
+        GameBoard.setMarkAtLoc(i, j, mark);
+        const cell = boardEl.querySelector(`[data-index="${i}${j}"]`);
+        cell.textContent = mark;
+    }
+
     const gameSetup = () => {
-        Game.startGame(player1, player2);
+        Game.startGame(player1, comp1);
         boardEl.classList.add('playing');
         gameInfo.style.display = 'none';
         _displayBoard();
         _addBoardElClick();
+        Game.playTurn();
     }
 
-    return { gameSetup };
+    return { gameSetup, displayMarkAt, displayScore };
 })(document);
 
 DisplayController.gameSetup();
