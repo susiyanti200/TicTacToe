@@ -14,6 +14,29 @@
 
 <body>
     <h1>Tic Tac Toe</h1>
+    <div class="starting">
+        <p>Choose your opponent</p>
+        <div class="selection">
+            <div class="choice" data-type="Player">
+                <span class="material-icons-outlined">face</span><span>Player</span>
+            </div>
+            <div class="choice" data-type="Computer" data-level="Easy">
+                <span class="material-icons-outlined">smart_toy</span><span>AI-Easy</span>
+            </div>
+            <div class="choice" data-type="Computer" data-level="Hard">
+                <span class="material-icons-outlined">smart_toy</span><span>AI-Hard</span>
+            </div>
+        </div>
+        <p>Choose you symbols</p>
+        <div class="selection">
+            <p class="symbols" data-mark="X">X</p>
+            <p class="symbols" data-mark="O">O</p>
+        </div>
+        <label for="name">Your name</label>
+        <input type="text" id="name">
+        <button class="btn btn-start">Start</button>
+        <p class="error"></p>
+    </div>
     <div class="gameboard"></div>
     <div class="game-info">
         <span class="material-icons-outlined"></span>

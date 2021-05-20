@@ -117,14 +117,19 @@ const DisplayController = ((doc) => {
     const playBtn = gameInfo.querySelector('.btn-play');
     const playResult = gameInfo.querySelector('.result');
     const icon = gameInfo.querySelector('.material-icons-outlined');
-
-    const player1 = Player('Player1', 'x', 'Human');
-    const comp1 = Computer('Computer1', 'o', 'Computer', 'Easy');
+    const newBtn = gameInfo.querySelector('.btn-new');
+    const starting = doc.querySelector('.starting');
+    const choices = doc.querySelectorAll('.choice');
+    const symbols = doc.querySelectorAll('.symbols');
+    const nameEl = doc.querySelector('#name');
+    const startBtn = doc.querySelector('.btn-start');
+    const errEl = doc.querySelector('.error');
+    let opponentConf = {}, chooseMark, player1, player2;
 
     const _addBoardElClick = () => {
         boardEl.addEventListener('click', (e) => {
             let player = Game.getPlayerAtTurn();
-            if (Game.getGameStatus() && player.type === 'Human') {
+            if (Game.getGameStatus() && player.type === 'Player') {
                 const cell = e.target;
                 if (!cell.textContent) {
                     [i, j] = (cell.dataset.index.split(''));
@@ -138,6 +143,58 @@ const DisplayController = ((doc) => {
     const _addPlayBtnClick = () => {
         playBtn.addEventListener('click', () => {
             gameSetup();
+        });
+    }
+
+    const _addNewBtnClick = () => {
+        newBtn.addEventListener('click', () => {
+            welcome();
+        });
+    }
+
+    const _addStartBtnClick = () => {
+        startBtn.addEventListener('click', () => {
+            const name = nameEl.value;
+            console.log(opponentConf.type);
+            if (chooseMark && name && opponentConf.type !== undefined) {
+                player1 = Player(name, chooseMark, 'Player');
+                if (opponentConf.type === 'Player') {
+                    player2 = Player('Player2', chooseMark === 'X' ? 'O' : 'X', opponentConf.type);
+                } else {
+                    player2 = Computer(`AI-${opponentConf.level}`, chooseMark === 'X' ? 'O' : 'X', opponentConf.type, opponentConf.level);
+                }
+                gameSetup();
+            } else {
+                if (!name) errEl.textContent = 'Type your name!';
+                if (!chooseMark) errEl.textContent = 'Choose your symbol!';
+                if (opponentConf.type === undefined) errEl.textContent = 'Choose your opponent!';
+            }
+        });
+    }
+
+    const _removeChoose = (choices) => {
+        choices.forEach(choice => {
+            choice.classList.remove('clicked');
+        })
+    }
+
+    const _addChooseOponent = () => {
+        choices.forEach((choice) => {
+            choice.addEventListener('click', (e) => {
+                _removeChoose(choices);
+                Object.assign(opponentConf, e.currentTarget.dataset);
+                e.currentTarget.classList.add('clicked');
+            })
+        });
+    }
+
+    const _addChooseMark = () => {
+        symbols.forEach((choice) => {
+            choice.addEventListener('click', (e) => {
+                _removeChoose(symbols);
+                chooseMark = e.target.dataset.mark;
+                e.currentTarget.classList.add('clicked');
+            })
         });
     }
 
@@ -155,20 +212,17 @@ const DisplayController = ((doc) => {
     }
 
     const displayScore = (result) => {
-        boardEl.classList.remove('playing');
         gameInfo.style.display = 'block';
         if (result !== 'Tie') {
-            if (result.type === 'Human') {
+            if (result.type === 'Player') {
                 icon.textContent = 'face';
             } else {
                 icon.textContent = 'smart_toy';
             }
-            console.log(result);
             playResult.textContent = `${result.name} Win!`;
         } else {
             playResult.textContent = result;
         }
-        _addPlayBtnClick();
     }
 
     const displayMarkAt = (i, j, mark) => {
@@ -178,16 +232,43 @@ const DisplayController = ((doc) => {
     }
 
     const gameSetup = () => {
-        Game.startGame(player1, comp1);
-        boardEl.classList.add('playing');
+        if (player1.mark === 'X') {
+            Game.startGame(player1, player2);
+        } else {
+            Game.startGame(player2, player1);
+        }
+        starting.style.display = 'none';
         gameInfo.style.display = 'none';
         icon.textContent = '';
+        boardEl.classList.add('playing');
         _displayBoard();
-        _addBoardElClick();
         Game.playTurn();
     }
 
-    return { gameSetup, displayMarkAt, displayScore };
+    const welcome = () => {
+        boardEl.classList.remove('playing');
+        gameInfo.style.display = 'none';
+        icon.textContent = '';
+        starting.style.display = 'block';
+        opponentConf = {};
+        chooseMark = '';
+        _removeChoose(choices);
+        _removeChoose(symbols);
+        nameEl.value = '';
+        errEl.textContent = '';
+    }
+
+    const init = () => {
+        _addChooseOponent();
+        _addChooseMark();
+        _addStartBtnClick();
+        _addBoardElClick();
+        _addPlayBtnClick();
+        _addNewBtnClick();
+        welcome();
+    }
+
+    return { gameSetup, displayMarkAt, displayScore, welcome, init };
 })(document);
 
-DisplayController.gameSetup();
+DisplayController.init();

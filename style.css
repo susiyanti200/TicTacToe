@@ -23,13 +23,59 @@ h1 {
     font-size: 2rem;
 }
 
+.starting {
+    width: min(90vw, 500px);
+    margin: 5vh auto;
+}
+
+.selection {
+    display: flex;
+    width: 100%;
+    justify-content: space-around;
+    align-items: center;
+    margin: 2vh auto 4vh;
+}
+
+.choice, .symbols {
+    border: 1px solid var(--color1);
+    padding: 0.25rem 1rem;
+    border-radius: 1rem;
+    font-size: 0.5rem;
+    text-align: center;
+    cursor: pointer;
+}
+
+.clicked {
+    background: var(--color1);
+}
+
+.error {
+    margin-top: 2vh;
+    font-weight: bold;
+    color: red;
+}
+
+p, label {
+    font-size: 0.75rem;
+    display: block;
+}
+
+#name {
+    display: block;
+    background: none;
+    border: none;
+    outline: none;
+    width: 100%;
+    margin: 2vh auto 4vh;
+    border-bottom: 1px solid var(--color1);
+    font: 1rem 1/4;
+    color: var(--color3);
+}
+
 .gameboard {
+    display: none;
     width: min(80vmin, 400px);
     height: min(80vmin, 400px);
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    gap: 0.125rem;
     margin: 3vh auto;
     background-color: var(--color1);
 }
@@ -42,7 +88,11 @@ h1 {
     color: var(--color3);
 }
 
-.playing div:hover {
+.playing {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 0.125rem;
     cursor: pointer;
 }
 
