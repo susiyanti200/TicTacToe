@@ -79,7 +79,7 @@ const Game = (() => {
         if (mark) {
             _playing = false;
             const winner = _getPlayerForMark(mark);
-            const result = winner.length > 0 ? `${winner[0].name} Win` : mark;
+            const result = winner.length > 0 ? winner[0] : mark;
             DisplayController.displayScore(result);
         }
     }
@@ -116,6 +116,7 @@ const DisplayController = ((doc) => {
     const gameInfo = doc.querySelector('.game-info');
     const playBtn = gameInfo.querySelector('.btn-play');
     const playResult = gameInfo.querySelector('.result');
+    const icon = gameInfo.querySelector('.material-icons-outlined');
 
     const player1 = Player('Player1', 'x', 'Human');
     const comp1 = Computer('Computer1', 'o', 'Computer', 'Easy');
@@ -156,7 +157,17 @@ const DisplayController = ((doc) => {
     const displayScore = (result) => {
         boardEl.classList.remove('playing');
         gameInfo.style.display = 'block';
-        playResult.textContent = result;
+        if (result !== 'Tie') {
+            if (result.type === 'Human') {
+                icon.textContent = 'face';
+            } else {
+                icon.textContent = 'smart_toy';
+            }
+            console.log(result);
+            playResult.textContent = `${result.name} Win!`;
+        } else {
+            playResult.textContent = result;
+        }
         _addPlayBtnClick();
     }
 
@@ -170,6 +181,7 @@ const DisplayController = ((doc) => {
         Game.startGame(player1, comp1);
         boardEl.classList.add('playing');
         gameInfo.style.display = 'none';
+        icon.textContent = '';
         _displayBoard();
         _addBoardElClick();
         Game.playTurn();

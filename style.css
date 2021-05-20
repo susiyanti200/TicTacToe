@@ -4,28 +4,61 @@
     margin: 0;
 }
 
+:root {
+    --background-color: #d1d9d9;
+    --color1: #94d0cc;
+    --color2: #eec4c4;
+    --color3: #f29191;
+}
+
 body {
-    height: 100vh;
-    width: 95%;
-    margin: 0 auto;
+    background-color: var(--background-color);
+    color: var(--color3);
+    font-family: 'Goblin One', cursive;
+}
+
+h1 {
+    text-align: center;
+    margin-top: 3vh;
+    font-size: 2rem;
 }
 
 .gameboard {
-    width: 95vmin;
-    height: 95vmin;
+    width: min(80vmin, 400px);
+    height: min(80vmin, 400px);
     display: grid;
     grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
     gap: 0.125rem;
-    margin: 0 auto;
+    margin: 3vh auto;
+    background-color: var(--color1);
 }
 
 .gameboard div {
     display: grid;
     place-items: center;
-    border: 1px solid black;
+    font-size: 1.5rem;
+    background-color: var(--background-color);
+    color: var(--color3);
 }
 
-.playing div:hover, .gameboard div:focus {
+.playing div:hover {
     cursor: pointer;
-    outline: 2px solid green;
+}
+
+.game-info {
+    border-radius: 1rem;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.btn {
+    margin-top: 2vh;
+    font-size: 1rem;
+    background-color: var(--color1);
+    padding: 0.5em 1em;
+    border: none;
+    color: white;
+    border-radius: 0.5em;
+    cursor: pointer;
 }
