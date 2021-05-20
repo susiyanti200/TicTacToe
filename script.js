@@ -7,6 +7,8 @@ const GameBoard = (() => {
 
     const getBoardSize = () => [_board.length, _board[0].length];
 
+    const isMovesLeft = () => _board.some(row => row.includes(''));
+
     const checkWinner = () => {
         // find winner through combination
         if (_board[0][0] && (_board[0][0] === _board[1][1]) && (_board[0][0] === _board[2][2])) {
@@ -24,7 +26,7 @@ const GameBoard = (() => {
             }
         }
         // if all space are fill out and no winner then it's a Tie
-        return !_board.some(row => row.includes('')) && 'Tie';
+        return !isMovesLeft() && 'Tie';
     }
 
     const resetBoard = () => {
@@ -32,7 +34,7 @@ const GameBoard = (() => {
     }
 
     return {
-        getMarkAtLoc, setMarkAtLoc, getBoardSize, checkWinner, resetBoard
+        getMarkAtLoc, setMarkAtLoc, getBoardSize, checkWinner, resetBoard, isMovesLeft
     };
 })();
 
@@ -42,15 +44,75 @@ const Player = (name, mark, type) => {
 
 const Computer = (name, mark, type, level) => {
     const prototype = Player(name, mark, type);
-
-    const findRandomMove = () => {
+    const opponentMark = mark === 'X' ? 'O' : 'X';
+    const [row, col] = GameBoard.getBoardSize();
+    const _findRandomMove = () => {
         const i = Math.floor(Math.random() * 3);
         const j = Math.floor(Math.random() * 3);
         return [i, j];
     }
 
+    const _evaluate = () => {
+        const result = GameBoard.checkWinner();
+        if (result === mark) return 10;
+        if (result === opponentMark) return -10;
+        return 0;
+    }
+
+    const _minimax = (depth, isMax) => {
+        const score = _evaluate();
+        let best;
+        if (score === 10 || score === -10) return score;
+        if (!GameBoard.isMovesLeft()) return 0;
+        if (isMax) {
+            best = -1000;
+            for (let i = 0; i < row; i++) {
+                for (let j = 0; j < col; j++) {
+                    if (GameBoard.getMarkAtLoc(i, j) === '') {
+                        GameBoard.setMarkAtLoc(i, j, mark);
+                        best = Math.max(best, _minimax(depth + 1, !isMax));
+                        GameBoard.setMarkAtLoc(i, j, '');
+                    }
+                }
+            }
+            return best;
+        } else {
+            best = 1000;
+            for (let i = 0; i < row; i++) {
+                for (let j = 0; j < col; j++) {
+                    if (GameBoard.getMarkAtLoc(i, j) === '') {
+                        GameBoard.setMarkAtLoc(i, j, opponentMark);
+                        best = Math.min(best, _minimax(depth + 1, !isMax));
+                        GameBoard.setMarkAtLoc(i, j, '');
+                    }
+                }
+            }
+            return best;
+        }
+    }
+
+    const _findBestMove = () => {
+        let bestVal = -1000;
+        let bestMove = [-1, -1];
+        for (let i = 0; i < row; i++) {
+            for (let j = 0; j < col; j++) {
+                if (GameBoard.getMarkAtLoc(i, j) === '') {
+                    GameBoard.setMarkAtLoc(i, j, mark);
+                    const moveVal = _minimax(0, false);
+                    GameBoard.setMarkAtLoc(i, j, '');
+                    if (moveVal > bestVal) {
+                        bestMove = [i, j];
+                        bestVal = moveVal;
+                    }
+                }
+            }
+        }
+        return bestMove;
+    }
+
     const makeMove = () => {
-        return findRandomMove();
+        if (level === 'Easy') return _findRandomMove();
+        return _findBestMove();
     }
 
     return Object.assign({}, prototype, { level, makeMove });
